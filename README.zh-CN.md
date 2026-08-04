@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://www.zotero.org/support/_media/icons/zotero_icon.png" width="96" alt="Zotero 图标"/>
-</p>
-
 <h1 align="center">Zotero Literature Workflow</h1>
 
 <p align="center">
@@ -11,7 +7,7 @@
 <p align="center">
   <a href="#安装"><img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+"/></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"/></a>
-  <a href="https://github.com/thovet55/zotero-literature-workflow/actions"><img src="https://img.shields.io/github/actions/workflow/status/thovet55/zotero-literature-workflow/test.yml" alt="CI 状态"/></a>
+  <a href="https://github.com/thovet55/zotero-literature-workflow/actions"><img src="https://img.shields.io/github/actions/workflow/status/thovet55/zotero-literature-workflow/ci.yml" alt="CI 状态"/></a>
 </p>
 
 <p align="center">

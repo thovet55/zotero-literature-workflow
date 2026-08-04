@@ -8,8 +8,22 @@ version = "0.1.0"
 description = "Read-only Zotero Web API tools for OpenCode literature review"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {file = "LICENSE"}
-dependencies = []
+license = "MIT"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/thovet55/zotero-literature-workflow"
+Repository = "https://github.com/thovet55/zotero-literature-workflow"
+Issues = "https://github.com/thovet55/zotero-literature-workflow/issues"
 
 [project.optional-dependencies]
 mcp = ["mcp>=1.0,<2.0"]
