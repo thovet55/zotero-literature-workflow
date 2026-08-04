@@ -1,14 +1,15 @@
 {
   "mcp": {
     "zotero-literature": {
-      // Replace /absolute/path/to/... with the real absolute path to your clone.
+      // Replace with the zotero-workflow-mcp binary in YOUR virtualenv
+      // (pip install "zotero-literature-workflow[mcp,pdf] @ git+https://github.com/thovet55/zotero-literature-workflow.git").
       "type": "local",
-      "command": ["/absolute/path/to/zotero-literature-workflow/.venv/bin/zotero-workflow-mcp"],
+      "command": ["/path/to/your/venv/bin/zotero-workflow-mcp"],
       "enabled": true,
       "timeout": 30000,
       "environment": {
-        // ZOTERO_DOTENV points the MCP process at your local .env file.
-        "ZOTERO_DOTENV": "/absolute/path/to/zotero-literature-workflow/.env",
+        // ZOTERO_DOTENV points the MCP process at YOUR .env file (any location).
+        "ZOTERO_DOTENV": "/path/to/your/.env",
         "ZOTERO_LIBRARY_TYPE": "user"
       }
     }

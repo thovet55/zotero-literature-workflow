@@ -27,13 +27,29 @@ No Zotero desktop app, local database, or manual PDF uploads required. Just a re
 
 ## Installation
 
+**Option A — install as a package (recommended, no clone):**
+
 ```bash
 python -m venv .venv
 . .venv/bin/activate
-pip install -e '.[dev,mcp,pdf]'
-cp .env.example .env
-chmod 600 .env
+pip install "zotero-literature-workflow[mcp,pdf] @ git+https://github.com/thovet55/zotero-literature-workflow.git"
 ```
+
+This installs the `zotero-workflow` CLI and the `zotero-workflow-mcp` server into your virtualenv.
+
+**Option B — clone and install editable:**
+
+```bash
+git clone https://github.com/thovet55/zotero-literature-workflow.git
+cd zotero-literature-workflow
+python -m venv .venv
+. .venv/bin/activate
+pip install -e '.[dev,mcp,pdf]'
+```
+
+### Configure credentials
+
+Create a `.env` file anywhere on disk (for example `~/.config/zotero-workflow/.env` or `./.env` in the project checkout). It is never committed.
 
 ### Get an API key
 
@@ -50,6 +66,8 @@ ZOTERO_LIBRARY_TYPE=user
 ```
 
 Never send the key in chat, logs, or issues. If it leaks, revoke it from Zotero Settings and create a new one.
+
+The CLI reads `.env` from your current directory by default, or from the path in the `ZOTERO_DOTENV` environment variable.
 
 ## Verify
 
@@ -69,11 +87,11 @@ Add a local MCP server entry to your OpenCode config (`~/.config/opencode/openco
   "mcp": {
     "zotero-literature": {
       "type": "local",
-      "command": ["/absolute/path/to/zotero-literature-workflow/.venv/bin/zotero-workflow-mcp"],
+      "command": ["/path/to/your/venv/bin/zotero-workflow-mcp"],
       "enabled": true,
       "timeout": 30000,
       "environment": {
-        "ZOTERO_DOTENV": "/absolute/path/to/zotero-literature-workflow/.env",
+        "ZOTERO_DOTENV": "/path/to/your/.env",
         "ZOTERO_LIBRARY_TYPE": "user"
       }
     }
@@ -81,7 +99,7 @@ Add a local MCP server entry to your OpenCode config (`~/.config/opencode/openco
 }
 ```
 
-The MCP process reads `.env` from the `ZOTERO_DOTENV` environment variable (absolute path), so it does not depend on OpenCode's working directory. Restart OpenCode after changing the config; each session spawns a fresh read-only MCP process.
+Replace the paths with your virtualenv's `zotero-workflow-mcp` binary and your `.env` file. The `ZOTERO_DOTENV` variable points the MCP process at your `.env` using an absolute path, so it works regardless of OpenCode's working directory. Restart OpenCode after changing the config; each session spawns a fresh read-only MCP process.
 
 ### Tools
 

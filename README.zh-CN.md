@@ -27,13 +27,29 @@
 
 ## 安装
 
+**方式 A — 作为包安装（推荐，无需 clone）：**
+
 ```bash
 python -m venv .venv
 . .venv/bin/activate
-pip install -e '.[dev,mcp,pdf]'
-cp .env.example .env
-chmod 600 .env
+pip install "zotero-literature-workflow[mcp,pdf] @ git+https://github.com/thovet55/zotero-literature-workflow.git"
 ```
+
+这会同时安装 `zotero-workflow` 命令行工具和 `zotero-workflow-mcp` 服务器到你的虚拟环境。
+
+**方式 B — clone 后以可编辑模式安装：**
+
+```bash
+git clone https://github.com/thovet55/zotero-literature-workflow.git
+cd zotero-literature-workflow
+python -m venv .venv
+. .venv/bin/activate
+pip install -e '.[dev,mcp,pdf]'
+```
+
+### 配置凭据
+
+在磁盘任意位置创建一个 `.env` 文件（例如 `~/.config/zotero-workflow/.env`，或在项目 checkout 里的 `./.env`）。它永远不会被提交。
 
 ### 获取 API key
 
@@ -50,6 +66,8 @@ ZOTERO_LIBRARY_TYPE=user
 ```
 
 切勿把 key 发到聊天、日志或 issue 中。若泄露，请到 Zotero Settings 吊销并重新创建。
+
+命令行工具默认从当前目录读取 `.env`，也可以通过 `ZOTERO_DOTENV` 环境变量指定路径。
 
 ## 验证
 
@@ -69,17 +87,19 @@ zotero-workflow search "moire" # 搜索你的文献库
   "mcp": {
     "zotero-literature": {
       "type": "local",
-      "command": ["/绝对路径/zotero-literature-workflow/.venv/bin/zotero-workflow-mcp"],
+      "command": ["/你的虚拟环境路径/bin/zotero-workflow-mcp"],
       "enabled": true,
       "timeout": 30000,
       "environment": {
-        "ZOTERO_DOTENV": "/绝对路径/zotero-literature-workflow/.env",
+        "ZOTERO_DOTENV": "/你的/.env路径",
         "ZOTERO_LIBRARY_TYPE": "user"
       }
     }
   }
 }
 ```
+
+把路径替换为你虚拟环境中的 `zotero-workflow-mcp` 可执行文件和 `.env` 文件路径。`ZOTERO_DOTENV` 用绝对路径指向你的 `.env`，因此不依赖 OpenCode 的工作目录。修改配置后重启 OpenCode；每次会话都会启动全新的只读 MCP 进程。
 
 MCP 进程通过 `ZOTERO_DOTENV` 环境变量（绝对路径）读取 `.env`，不依赖 OpenCode 的工作目录。修改配置后重启 OpenCode；每次会话都会启动全新的只读 MCP 进程。
 
