@@ -1,32 +1,20 @@
-<h1 align="center">Zotero Literature Workflow</h1>
+# Zotero Literature Workflow
 
 <p align="center">
-  基于 <a href="https://www.zotero.org/support/dev/web_api/v3/start">Zotero Web API v3</a> 的只读文献工具，为 <a href="https://opencode.ai">OpenCode</a> 提供以证据为先的文献综述能力。
+  <a href="./README.md">English</a> | 简体中文
 </p>
 
-<p align="center">
-  <a href="#安装"><img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+"/></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"/></a>
-  <a href="https://github.com/thovet55/zotero-literature-workflow/actions"><img src="https://img.shields.io/github/actions/workflow/status/thovet55/zotero-literature-workflow/ci.yml" alt="CI 状态"/></a>
-</p>
-
-<p align="center">
-  <a href="./README.md">English</a> | <strong>简体中文</strong>
-</p>
-
-无需 Zotero 桌面客户端、本地数据库或手动上传 PDF。只需一个只读 API key——客户端直接对接 Zotero Web API。
+Zotero Literature Workflow 把 [Zotero](https://www.zotero.org) 文献库接入 [OpenCode](https://opencode.ai) 里的 AI 助手。用大白话问文献、直接读 PDF 正文和网页快照、还能看图表公式——不用打开 Zotero 桌面端，也不用手动导出任何东西。
 
 ## 特性
 
-- **只读设计**——仅暴露 `search_items`、`get_item`、`get_children`、`get_fulltext`、`get_pdf_text`、`get_attachment_text` 和 `get_pdf_pages`，不存在任何写入工具。
-- **文本提取**——下载已同步的 PDF 附件，通过 [pypdf](https://github.com/py-pdf/pypdf) 提取正文；对于网页快照（ZIP 包裹的 HTML），用内置 HTML→文本转换器提取。
-- **视觉渲染**——`get_pdf_pages` 将 PDF 页面渲染为 PNG 图片，多模态模型可以直接查看文本层无法表达的图表、表格与公式。
-- **MCP 就绪**——以 [MCP](https://modelcontextprotocol.io) 服务器形式发布，OpenCode 智能体可直接查询你的文献库。
-- **证据优先工作流**——配套 `literature-review` 技能，强制提供引文上下文证据，并对仅基于元数据的结论进行降级标注。
+* **搜索** — 用自然语言在文献库里找论文，AI 返回的不只是标题，而是带引文上下文的匹配结果。
+* **阅读** — 自动提取已同步 PDF 的正文，网页快照（保存的网页）也能自动抽文字。
+* **看图** — 把 PDF 任意一页渲染成图片，多模态模型可以直接读图表、表格、公式和扫描版页面。
+* **证据优先** — 每条回答都绑定引文上下文，并标明文字来源，区分"原文有的"和"AI 总结的"。
+* **上手快** — 不需要 Zotero 桌面端、本地数据库或手动上传 PDF。装好、填一个 key，就能用。
 
-## 安装
-
-**方式 A — 作为包安装（推荐，无需 clone）：**
+## 快速开始
 
 ```bash
 python -m venv .venv
@@ -34,29 +22,7 @@ python -m venv .venv
 pip install "zotero-literature-workflow[mcp,pdf] @ git+https://github.com/thovet55/zotero-literature-workflow.git"
 ```
 
-这会同时安装 `zotero-workflow` 命令行工具和 `zotero-workflow-mcp` 服务器到你的虚拟环境。
-
-**方式 B — clone 后以可编辑模式安装：**
-
-```bash
-git clone https://github.com/thovet55/zotero-literature-workflow.git
-cd zotero-literature-workflow
-python -m venv .venv
-. .venv/bin/activate
-pip install -e '.[dev,mcp,pdf]'
-```
-
-### 配置凭据
-
-在磁盘任意位置创建一个 `.env` 文件（例如 `~/.config/zotero-workflow/.env`，或在项目 checkout 里的 `./.env`）。它永远不会被提交。
-
-### 获取 API key
-
-1. 登录 [zotero.org](https://www.zotero.org)，打开 **Settings → Security → API Keys**（[直达链接](https://www.zotero.org/settings/keys)）。
-2. 点击 **Create new private key**，只授予目标库的**只读**权限。
-3. 复制 key，并记下**数字 UserID**（同页面显示 "Your userID for use in API calls is …"）。
-
-填写 `.env`：
+在磁盘任意位置创建一个 `.env`（例如 `~/.config/zotero-workflow/.env`），填入你的 key：
 
 ```text
 ZOTERO_API_KEY=你的-key
@@ -64,22 +30,45 @@ ZOTERO_LIBRARY_ID=你的数字用户ID
 ZOTERO_LIBRARY_TYPE=user
 ```
 
-切勿把 key 发到聊天、日志或 issue 中。若泄露，请到 Zotero Settings 吊销并重新创建。
+去 **Zotero → Settings → Security → API Keys**（[直达链接](https://www.zotero.org/settings/keys)）申请。创建带**只读**权限的 private key，同页会显示你的数字 UserID。
 
-命令行工具默认从当前目录读取 `.env`，也可以通过 `ZOTERO_DOTENV` 环境变量指定路径。
+验证是否一切正常：
 
-## 验证
-
-```bash
-zotero-workflow check          # 读取 1 条，仅打印脱敏后的 key
-zotero-workflow search "moire" # 搜索你的文献库
+```console
+$ zotero-workflow check
+{"ok": true, "library": "1234567", "items_read": 1, "key": "abc...xyz"}
 ```
 
-`check` 输出 `{"ok": true, ...}` 即代表凭据可用。
+搜索你的文献库：
+
+```console
+$ zotero-workflow search "moire"
+[
+  {
+    "key": "ABC123DE",
+    "data": {
+      "itemType": "journalArticle",
+      "title": "Fractional quantum anomalous Hall effect in twisted MoTe2",
+      ...
+```
+
+## 在 OpenCode 里用
+
+接好 MCP 服务器后（见下方 [OpenCode MCP 接入](#opencode-mcp-接入)），你只需要直接问：
+
+> "帮我在文献库里搜 moiré 相关的论文，列出标题、年份和期刊。"
+
+> "把这篇关于分数量子反常霍尔效应的论文 PDF 正文提取出来。"
+
+> "把那个 PDF 的第 3 页渲染成图片，帮我描述一下 Figure 2。"
+
+> "找找我的批注里哪些提到了 'Chern number'。"
+
+AI 会自动挑选合适的工具，从你的文献库里取来证据，并告诉你它到底读了什么。
 
 ## OpenCode MCP 接入
 
-在 OpenCode 配置（`~/.config/opencode/opencode.json` 或项目级 `opencode.json`）中添加本地 MCP 服务器。结构见 [`opencode.example.jsonc`](./opencode.example.jsonc)：
+在 OpenCode 配置（`~/.config/opencode/opencode.json` 或项目级 `opencode.json`）中添加本地 MCP 服务器。完整结构见 [`opencode.example.jsonc`](./opencode.example.jsonc)：
 
 ```jsonc
 {
@@ -98,7 +87,9 @@ zotero-workflow search "moire" # 搜索你的文献库
 }
 ```
 
-把路径替换为你虚拟环境中的 `zotero-workflow-mcp` 可执行文件和 `.env` 文件路径。`ZOTERO_DOTENV` 用绝对路径指向你的 `.env`，因此不依赖 OpenCode 的工作目录。修改配置后重启 OpenCode；每次会话都会启动全新的只读 MCP 进程。
+把路径替换成你虚拟环境里的 `zotero-workflow-mcp` 可执行文件和 `.env` 路径。`ZOTERO_DOTENV` 用绝对路径指向 `.env`，因此不依赖 OpenCode 的工作目录。改完配置重启 OpenCode；每次会话都会启动全新的只读 MCP 进程。
+
+服务器没有凭据也能正常启动——只有真正调用工具时，才会提示清晰的 `ZOTERO_API_KEY is required` 错误。
 
 ### 工具列表
 
@@ -112,17 +103,11 @@ zotero-workflow search "moire" # 搜索你的文献库
 | `get_attachment_text` | 下载附件并按实际内容类型提取文本（PDF 或网页快照） |
 | `get_pdf_pages` | 将一页或多页 PDF 渲染为 PNG 图片供多模态模型查看（`pages` 支持 `"1"`、`"1-3"`、`"1,3,5"`；省略则渲染全部） |
 
-### 视觉分析
-
-`get_pdf_pages` 返回的是图片而非文本——消费它们的模型必须是**多模态**的（例如 OpenCode 配置了具备视觉能力的模型）。只请求需要的页：单页渲染约 750 KB base64，一次渲染整篇容易撑爆上下文窗口。推荐用法：
-
-- **图表/表格/公式**——渲染对应页（`get_pdf_pages(attachment_key, pages="3")`），让模型描述内容。
-- **文字密集段落**——优先用 `get_pdf_text`（便宜且精确），仅当文本层乱码或扫描版页面时才退回到渲染。
-- **网页快照**——用 `get_attachment_text`，它会自动解包 ZIP 包裹的 HTML。
+**视觉分析。** `get_pdf_pages` 返回的是图片而非文本——消费它们的模型必须是多模态的。只请求需要的页：单页渲染约 750 KB base64，一次渲染整篇容易撑爆上下文窗口。文字密集的段落优先用 `get_pdf_text`，图表、表格、公式或扫描版页面再退回渲染。
 
 ## 文献综述技能
 
-[`skills/literature-review/SKILL.md`](./skills/literature-review/SKILL.md) 定义了证据优先的综述协议：每条引用必须给出上下文证据，记录文本来源（Zotero 索引或已同步 PDF），并将仅基于元数据的结论标注为低置信度。
+[`skills/literature-review/SKILL.md`](./skills/literature-review/SKILL.md) 定义了证据优先的综述协议：每条引用必须有引文上下文，记录文字来源（Zotero 索引或已同步 PDF），并将仅基于元数据的结论标注为低置信度。
 
 ## 开发
 
@@ -133,14 +118,14 @@ python -m compileall -q src
 
 ## 限制
 
-- 有附件记录不代表 PDF 已同步到 Zotero Storage。
-- 即使文件接口对已同步附件可用，全文索引也可能不完整。
-- PDF 批注/高亮需按条目确认，并非所有 Web API 响应都保证包含。
-- 本项目不绕过付费墙、不寻找未授权副本，并且刻意不实现任何写入 API。
+* 有附件记录不代表 PDF 已同步到 Zotero Storage。
+* 即使文件接口对已同步附件可用，全文索引也可能不完整。
+* PDF 批注/高亮需按条目确认，并非所有 Web API 响应都保证包含。
+* 本项目不绕过付费墙、不寻找未授权副本，并且刻意不实现任何写入 API。
 
 ## 安全
 
-完整策略见 [SECURITY.md](./SECURITY.md)。
+API key 通过 `Zotero-API-Key` 请求头传递，绝不进入 URL。密钥存放于本地 `.env`（已被 git 忽略、永不提交）——切勿把 key 发到聊天、日志或 issue 中；若泄露，请到 Zotero Settings 吊销并重新创建。完整策略见 [SECURITY.md](./SECURITY.md)。
 
 ## 许可证
 
