@@ -14,16 +14,14 @@
   <a href="./README.md">English</a> | <strong>简体中文</strong>
 </p>
 
-无需 Zotero 桌面客户端、本地数据库或手动上传 PDF。只需一个只读 API key——客户端直接对接 Zotero Web API，key 永远不会泄露。
+无需 Zotero 桌面客户端、本地数据库或手动上传 PDF。只需一个只读 API key——客户端直接对接 Zotero Web API。
 
 ## 特性
 
 - **只读设计**——仅暴露 `search_items`、`get_item`、`get_children`、`get_fulltext`、`get_pdf_text`、`get_attachment_text` 和 `get_pdf_pages`，不存在任何写入工具。
 - **文本提取**——下载已同步的 PDF 附件，通过 [pypdf](https://github.com/py-pdf/pypdf) 提取正文；对于网页快照（ZIP 包裹的 HTML），用内置 HTML→文本转换器提取。
 - **视觉渲染**——`get_pdf_pages` 将 PDF 页面渲染为 PNG 图片，多模态模型可以直接查看文本层无法表达的图表、表格与公式。
-- **默认安全**——API key 通过 `Zotero-API-Key` 请求头传递，绝不进入 URL；密钥存放于本地 `.env`（已被 git 忽略、永不提交）。
 - **MCP 就绪**——以 [MCP](https://modelcontextprotocol.io) 服务器形式发布，OpenCode 智能体可直接查询你的文献库。
-- **懒加载配置**——即使没有凭据，服务器也能正常启动；仅在实际调用工具时才报清晰的 `ZOTERO_API_KEY is required` 错误。
 - **证据优先工作流**——配套 `literature-review` 技能，强制提供引文上下文证据，并对仅基于元数据的结论进行降级标注。
 
 ## 安装
