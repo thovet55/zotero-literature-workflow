@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zotero-literature-workflow"
+version = "0.1.0"
+description = "Read-only Zotero Web API tools for OpenCode literature review"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.0,<2.0"]
+pdf = ["pypdf>=5.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+zotero-workflow = "zotero_workflow.cli:main"
+zotero-workflow-mcp = "zotero_workflow.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "zotero-literature": {
+      "type": "local",
+      "command": ["/absolute/path/to/zotero-literature-workflow/.venv/bin/zotero-workflow-mcp"],
+      "enabled": true,
+      "timeout": 30000,
+      "environment": {
+        "ZOTERO_DOTENV": "/absolute/path/to/zotero-literature-workflow/.env",
+        "ZOTERO_LIBRARY_TYPE": "user"
+      }
+    }
+  }
+}
