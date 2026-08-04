@@ -1,3 +1,8 @@
+---
+name: literature-review
+description: Use when reviewing or reading Zotero literature — finding items, PDFs, references, citation contexts, or recommending cited papers from the Zotero library via the zotero-literature MCP server.
+---
+
 # Zotero Literature Review
 
 Use the `zotero-literature` MCP server for a read-only, evidence-first review.
