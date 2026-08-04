@@ -105,6 +105,8 @@ The server even starts without credentials — it only reports a clear `ZOTERO_A
 
 **Visual analysis.** `get_pdf_pages` returns images, not text — the model consuming them must be multimodal. Request only the pages you need: a rendered page is roughly 750 KB of base64, so rendering a whole PDF at once can exhaust the context window. Prefer `get_pdf_text` for text-heavy passages and fall back to rendering for figures, tables, equations, or scanned pages.
 
+**Download caching.** Downloaded files are cached in memory for the lifetime of the server process, so reading the same attachment twice does not hit the Zotero API again. Nothing is written to disk — the cache disappears when the process exits. If an attachment is updated in Zotero during a session, the cached copy may be stale until the server restarts.
+
 ## Literature review skill
 
 [`skills/literature-review/SKILL.md`](./skills/literature-review/SKILL.md) defines an evidence-first review protocol: every reference needs a citation context, the source of the text (Zotero's index vs. a synced PDF) is recorded, and metadata-only conclusions are flagged as lower confidence.

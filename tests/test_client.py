@@ -28,6 +28,12 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps({"content": "References\n[1] Example"}).encode())
+        elif self.path.endswith("/file"):
+            key = self.path.split("/items/")[1].split("/")[0]
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.end_headers()
+            self.wfile.write(("data-for-" + key).encode())
         else:
             self.send_response(404)
             self.end_headers()
@@ -64,3 +70,30 @@ def test_client_classifies_http_errors(server):
         client.get_item("missing")
     assert caught.value.status == 404
     assert "secret" not in str(caught.value)
+
+
+def _file_requests(server):
+    return [path for path, _ in server.seen if path.endswith("/file")]
+
+
+def test_download_file_cached_within_session(server):
+    client = ZoteroClient("k", "123", base_url=f"http://127.0.0.1:{server.server_port}")
+    first = client.download_file("A")
+    second = client.download_file("A")
+    assert first == second == b"data-for-A"
+    assert len(_file_requests(server)) == 1
+
+
+def test_download_file_distinct_keys_not_shared(server):
+    client = ZoteroClient("k", "123", base_url=f"http://127.0.0.1:{server.server_port}")
+    assert client.download_file("A") == b"data-for-A"
+    assert client.download_file("missing") == b"data-for-missing"
+    assert len(_file_requests(server)) == 2
+
+
+def test_clear_file_cache_forces_redownload(server):
+    client = ZoteroClient("k", "123", base_url=f"http://127.0.0.1:{server.server_port}")
+    client.download_file("A")
+    client.clear_file_cache()
+    client.download_file("A")
+    assert len(_file_requests(server)) == 2

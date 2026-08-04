@@ -12,6 +12,7 @@ class ZoteroClient:
         self.library_id = library_id
         self.library_type = library_type
         self.base_url = base_url.rstrip("/")
+        self._file_cache: dict[str, bytes] = {}
 
     @property
     def library_path(self) -> str:
@@ -52,4 +53,11 @@ class ZoteroClient:
         return self._get(self.library_path + "/items/" + attachment_key + "/fulltext")[0]
 
     def download_file(self, attachment_key: str) -> bytes:
-        return self._get(self.library_path + "/items/" + attachment_key + "/file")[0]
+        if attachment_key in self._file_cache:
+            return self._file_cache[attachment_key]
+        data = self._get(self.library_path + "/items/" + attachment_key + "/file")[0]
+        self._file_cache[attachment_key] = data
+        return data
+
+    def clear_file_cache(self) -> None:
+        self._file_cache.clear()
