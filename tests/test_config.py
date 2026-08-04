@@ -3,16 +3,24 @@ import pytest
 from zotero_workflow.config import ConfigurationError, load_settings, redact_secret
 
 
-def test_load_settings_requires_api_key(monkeypatch):
+def test_load_settings_requires_api_key(monkeypatch, tmp_path):
     monkeypatch.delenv("ZOTERO_API_KEY", raising=False)
-    monkeypatch.setenv("ZOTERO_LIBRARY_ID", "12345")
+    monkeypatch.delenv("ZOTERO_LIBRARY_ID", raising=False)
+    monkeypatch.delenv("ZOTERO_DOTENV", raising=False)
+    empty_env = tmp_path / "empty.env"
+    empty_env.write_text("")
+    monkeypatch.setenv("ZOTERO_DOTENV", str(empty_env))
     with pytest.raises(ConfigurationError, match="ZOTERO_API_KEY"):
         load_settings()
 
 
-def test_load_settings_defaults_to_user_library(monkeypatch):
+def test_load_settings_defaults_to_user_library(monkeypatch, tmp_path):
     monkeypatch.setenv("ZOTERO_API_KEY", "secret-value")
     monkeypatch.setenv("ZOTERO_LIBRARY_ID", "12345")
+    monkeypatch.delenv("ZOTERO_DOTENV", raising=False)
+    empty_env = tmp_path / "empty.env"
+    empty_env.write_text("")
+    monkeypatch.setenv("ZOTERO_DOTENV", str(empty_env))
     settings = load_settings()
     assert settings.library_type == "user"
     assert settings.library_id == "12345"

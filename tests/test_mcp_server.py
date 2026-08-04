@@ -57,20 +57,24 @@ def test_pdf_text_helper_downloads_and_extracts_real_pdf():
     assert "[1] Example citation" in result["text"]
 
 
-def test_create_server_starts_without_config(monkeypatch):
+def test_create_server_starts_without_config(monkeypatch, tmp_path):
     monkeypatch.delenv("ZOTERO_API_KEY", raising=False)
     monkeypatch.delenv("ZOTERO_LIBRARY_ID", raising=False)
-    monkeypatch.delenv("ZOTERO_DOTENV", raising=False)
+    empty_env = tmp_path / "empty.env"
+    empty_env.write_text("")
+    monkeypatch.setenv("ZOTERO_DOTENV", str(empty_env))
     server = create_server(client=None)
     names = {tool.name for tool in asyncio.run(server.list_tools())}
     assert "search_items" in names
     assert "get_pdf_text" in names
 
 
-def test_tool_call_without_config_returns_clear_error(monkeypatch):
+def test_tool_call_without_config_returns_clear_error(monkeypatch, tmp_path):
     monkeypatch.delenv("ZOTERO_API_KEY", raising=False)
     monkeypatch.delenv("ZOTERO_LIBRARY_ID", raising=False)
-    monkeypatch.delenv("ZOTERO_DOTENV", raising=False)
+    empty_env = tmp_path / "empty.env"
+    empty_env.write_text("")
+    monkeypatch.setenv("ZOTERO_DOTENV", str(empty_env))
     server = create_server(client=None)
     with pytest.raises(Exception, match="ZOTERO_API_KEY"):
         asyncio.run(server.call_tool("search_items", {}))
