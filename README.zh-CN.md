@@ -18,8 +18,9 @@
 
 ## 特性
 
-- **只读设计**——仅暴露 `search_items`、`get_item`、`get_children`、`get_fulltext` 和 `get_pdf_text`，不存在任何写入工具。
-- **PDF 文本提取**——下载已同步的 PDF 附件，通过 [pypdf](https://github.com/py-pdf/pypdf) 提取正文文本。
+- **只读设计**——仅暴露 `search_items`、`get_item`、`get_children`、`get_fulltext`、`get_pdf_text`、`get_attachment_text` 和 `get_pdf_pages`，不存在任何写入工具。
+- **文本提取**——下载已同步的 PDF 附件，通过 [pypdf](https://github.com/py-pdf/pypdf) 提取正文；对于网页快照（ZIP 包裹的 HTML），用内置 HTML→文本转换器提取。
+- **视觉渲染**——`get_pdf_pages` 将 PDF 页面渲染为 PNG 图片，多模态模型可以直接查看文本层无法表达的图表、表格与公式。
 - **默认安全**——API key 通过 `Zotero-API-Key` 请求头传递，绝不进入 URL；密钥存放于本地 `.env`（已被 git 忽略、永不提交）。
 - **MCP 就绪**——以 [MCP](https://modelcontextprotocol.io) 服务器形式发布，OpenCode 智能体可直接查询你的文献库。
 - **懒加载配置**——即使没有凭据，服务器也能正常启动；仅在实际调用工具时才报清晰的 `ZOTERO_API_KEY is required` 错误。
@@ -101,8 +102,6 @@ zotero-workflow search "moire" # 搜索你的文献库
 
 把路径替换为你虚拟环境中的 `zotero-workflow-mcp` 可执行文件和 `.env` 文件路径。`ZOTERO_DOTENV` 用绝对路径指向你的 `.env`，因此不依赖 OpenCode 的工作目录。修改配置后重启 OpenCode；每次会话都会启动全新的只读 MCP 进程。
 
-MCP 进程通过 `ZOTERO_DOTENV` 环境变量（绝对路径）读取 `.env`，不依赖 OpenCode 的工作目录。修改配置后重启 OpenCode；每次会话都会启动全新的只读 MCP 进程。
-
 ### 工具列表
 
 | 工具 | 说明 |
@@ -112,6 +111,16 @@ MCP 进程通过 `ZOTERO_DOTENV` 环境变量（绝对路径）读取 `.env`，�
 | `get_children` | 获取子条目（PDF、笔记、批注） |
 | `get_fulltext` | 从 Zotero 检索索引读取全文 |
 | `get_pdf_text` | 下载已同步的 PDF 附件并提取文本 |
+| `get_attachment_text` | 下载附件并按实际内容类型提取文本（PDF 或网页快照） |
+| `get_pdf_pages` | 将一页或多页 PDF 渲染为 PNG 图片供多模态模型查看（`pages` 支持 `"1"`、`"1-3"`、`"1,3,5"`；省略则渲染全部） |
+
+### 视觉分析
+
+`get_pdf_pages` 返回的是图片而非文本——消费它们的模型必须是**多模态**的（例如 OpenCode 配置了具备视觉能力的模型）。只请求需要的页：单页渲染约 750 KB base64，一次渲染整篇容易撑爆上下文窗口。推荐用法：
+
+- **图表/表格/公式**——渲染对应页（`get_pdf_pages(attachment_key, pages="3")`），让模型描述内容。
+- **文字密集段落**——优先用 `get_pdf_text`（便宜且精确），仅当文本层乱码或扫描版页面时才退回到渲染。
+- **网页快照**——用 `get_attachment_text`，它会自动解包 ZIP 包裹的 HTML。
 
 ## 文献综述技能
 

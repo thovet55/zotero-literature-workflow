@@ -27,7 +27,7 @@ Issues = "https://github.com/thovet55/zotero-literature-workflow/issues"
 
 [project.optional-dependencies]
 mcp = ["mcp>=1.0,<2.0"]
-pdf = ["pypdf>=5.0"]
+pdf = ["pypdf>=5.0", "pymupdf>=1.24"]
 dev = ["pytest>=8.0"]
 
 [project.scripts]

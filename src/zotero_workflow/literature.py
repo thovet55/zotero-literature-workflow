@@ -1,5 +1,104 @@
 import re
+from html.parser import HTMLParser
 from io import BytesIO
+from zipfile import ZipFile
+
+
+class _TextExtractor(HTMLParser):
+    _BLOCK_TAGS = {
+        "p", "div", "section", "article", "h1", "h2", "h3", "h4", "h5", "h6",
+        "li", "ul", "ol", "tr", "td", "th", "table", "br", "header", "footer",
+    }
+
+    def __init__(self):
+        super().__init__()
+        self._blocks = []
+        self._current = []
+        self._skip = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self._skip += 1
+        elif tag in self._BLOCK_TAGS and self._current:
+            self._flush()
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style") and self._skip:
+            self._skip -= 1
+        elif tag in self._BLOCK_TAGS:
+            self._flush()
+
+    def handle_data(self, data):
+        if not self._skip:
+            self._current.append(data)
+
+    def _flush(self):
+        line = " ".join(" ".join(self._current).split())
+        if line:
+            self._blocks.append(line)
+        self._current = []
+
+    def text(self) -> str:
+        self._flush()
+        return "\n".join(self._blocks)
+
+
+def extract_html_text(html: bytes) -> str:
+    parser = _TextExtractor()
+    parser.feed(html.decode("utf-8", errors="replace"))
+    return parser.text()
+
+
+def extract_html_from_zip(data: bytes) -> bytes:
+    with ZipFile(BytesIO(data)) as archive:
+        names = archive.namelist()
+        html_names = [n for n in names if n.lower().endswith((".html", ".htm"))]
+        if not html_names:
+            raise ValueError("no .html file inside snapshot zip")
+        return archive.read(html_names[0])
+
+
+def render_pdf_pages(pdf_bytes: bytes, pages: str = "", zoom: float = 2.0) -> dict:
+    try:
+        import fitz
+    except ImportError:
+        return {"status": "pdf_render_dependency_missing", "images": []}
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        selected = _parse_pages(pages, doc.page_count)
+        matrix = fitz.Matrix(zoom, zoom)
+        images = []
+        for index in selected:
+            page = doc[index]
+            pix = page.get_pixmap(matrix=matrix)
+            images.append(pix.tobytes("png"))
+        return {"status": "pdf_rendered", "page_count": doc.page_count, "images": images}
+    except Exception as exc:
+        return {"status": "pdf_render_failed", "images": [], "error": str(exc)}
+
+
+def _parse_pages(spec: str, count: int) -> list[int]:
+    if not spec:
+        return list(range(count))
+    pages: list[int] = []
+    for part in spec.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            start, _, end = part.partition("-")
+            try:
+                low, high = int(start), int(end)
+            except ValueError:
+                continue
+            pages.extend(range(low, high + 1))
+        else:
+            try:
+                pages.append(int(part))
+            except ValueError:
+                continue
+    result = [p - 1 for p in pages if 1 <= p <= count]
+    return sorted(set(result)) or list(range(count))
 
 
 def fulltext_status(fulltext: dict | None) -> str:
